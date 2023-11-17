@@ -18,8 +18,6 @@ data <- read.csv("heart.csv", header = TRUE, sep=",")
 
 ```{r}
 #| echo: false
-# one hot encoding categorical variables
-
 # convert categorical variables to factors
 data$Sex <- as.factor(data$Sex)
 data$ChestPainType <- as.factor(data$ChestPainType)
@@ -28,50 +26,39 @@ data$ExerciseAngina <- as.factor(data$ExerciseAngina)
 data$ST_Slope <- as.factor(data$ST_Slope)
 
 # formula for network
-formula <- formula(HeartDisease ~ Age + Sex + ChestPainType + RestingBP + Cholesterol + FastingBS + RestingECG + MaxHR + ExerciseAngina + Oldpeak + ST_Slope)
+formula <- as.formula("HeartDisease ~ Age + Sex + ChestPainType + RestingBP + Cholesterol + FastingBS + RestingECG + MaxHR + ExerciseAngina + Oldpeak + ST_Slope")
 
-
-encoded_data <- predict(dummyVars(HeartDisease ~ ., data), newdata = data)
-```
-
-```{r}
-#| echo: false
 # split data into training and testing
 set.seed(200)
-split_ratio <- .8
+split_ratio <- 0.8
 num_samples <- nrow(data)
 train_indices <- sample(1:num_samples, split_ratio * num_samples)
 train_data <- data[train_indices, ]
 test_data <- data[-train_indices, ]
 
-# define the target variable
-train_labels <- train_data$HeartDisease
-test_labels <- test_data$HeartDisease
-
-# convert categorical variables to numeric
+# convert factor variables back to their original form
 categorical_columns <- c("Sex", "ChestPainType", "RestingECG", "ExerciseAngina", "ST_Slope")
+train_data[categorical_columns] <- lapply(train_data[categorical_columns], as.factor)
+test_data[categorical_columns] <- lapply(test_data[categorical_columns], as.factor)
 
-train_data[categorical_columns] <- lapply(train_data[categorical_columns], as.numeric)
-test_data[categorical_columns] <- lapply(test_data[categorical_columns], as.numeric)
+# convert all variables to numeric (including factors)
+train_data[] <- lapply(train_data, as.numeric)
+test_data[] <- lapply(test_data, as.numeric)
 
-# normalize the data
-scaler <- preProcess(train_data, method = c("center", "scale"))
-train_data <- predict(scaler, train_data)
-test_data <- predict(scaler, test_data)
-
-
+# train neural network
 nn_model <- neuralnet(
-  HeartDisease ~ .,
+  formula,
   data = train_data,
-  hidden = c(6,3), # number of neurons in hidden layer; manipulate as needed
+  hidden = c(5),   # number of neurons in hidden layer; manipulate as needed
   linear.output = TRUE,
-  threshold = .01, # convergence threshold
-  stepmax = 50000, # max number of iterations
-  learningrate = .01, # manipulate as needed
+  threshold = 0.01,   # convergence threshold
+  stepmax = 5000000,    # max number of iterations
+  learningrate = 0.01, # manipulate as needed
+  startweights = NULL,
+  lifesign = "minimal"
 )
 
-# formatting model plot
-
+# plot model
 plot(nn_model, rep = "best", show.weights = FALSE)
 
 # evaluate the model on the test data and extract relevant column from predictions
