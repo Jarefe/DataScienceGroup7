@@ -1,0 +1,81 @@
+---
+title: ""
+format: pdf
+editor: visual
+---
+
+```{r}
+#| echo: false
+
+# change working directory accordingly
+setwd("D:/School/Data Science/Neural Network")
+HeartData <- read.csv("heart.csv", stringsAsFactors=TRUE)
+```
+
+# Methods:
+
+## -Logistic Regression
+
+To begin the process of model selection, we first fit the model using all the predictors.
+
+```{r}
+#| echo: false
+
+# fit logistic regression model using all predictors
+glm.heart <- glm(HeartDisease~., "binomial", HeartData)
+summary(glm.heart)
+```
+
+From the significance table, we noted that the predictors Age, RestingBP, RestingECG, and MaxHR had p-values \> 0.05. We next performed backward stepwise regression to see its results.
+
+```{r}
+#| echo: false
+
+# perform backward stepwise regression
+sglm.heart <- step(glm.heart, trace = 0)
+summary(sglm.heart)
+```
+
+We can see from the results of the backward stepwise regression that the same high p-value predictors were removed, except for Age. With Age having a p-value just over 0.05 of 0.051770, we decided to keep it in and use the results of the backward stepwise regression for our final model.
+
+The formula for our final model is:
+
+$$
+p(X) = \frac{e^{\beta_0+\beta_1(Age)+\beta_2(Sex)+\beta_3(ChestPainType)+\beta_4(Cholesterol)+\beta_5(FastingBS)+\beta_6(ExerciseAngina)+\beta_7(Oldpeak)+\beta_8(ST\_Slope)}}{1+e^{\beta_0+\beta_1(Age)+\beta_2(Sex)+\beta_3(ChestPainType)+\beta_4(Cholesterol)+\beta_5(FastingBS)+\beta_6(ExerciseAngina)+\beta_7(Oldpeak)+\beta_8(ST\_Slope)}}
+$$
+
+Using the final model, we performed 10 random 80/20 training/test splits to get the mean test prediction error.
+
+```{r}
+
+# calculate mean test prediction error
+set.seed(1)
+test.errors <- c()
+for (i in 1:10) {
+  # random 80/20 training/test split
+  sample <- sample(nrow(HeartData), 0.8*nrow(HeartData))
+  train.HeartData <- HeartData[sample, ]
+  test.HeartData <- HeartData[-sample, ]
+  
+  # fit model using results of backward stepwise regression
+  train.glm.heart <- glm(formula(sglm.heart), "binomial", train.HeartData)
+  
+  # calculate test prediction error
+  glm.pred = predict(train.glm.heart, test.HeartData, "response")
+  glm.pred = ifelse(glm.pred >= 0.5, 1, 0)
+  test.errors[i] <- sum(glm.pred != test.HeartData[, "HeartDisease"])/length(glm.pred)
+}
+cat("Mean test prediction error: ", mean(test.errors))
+
+```
+
+# Results:
+
+```{r}
+#| echo: false
+
+# repeat significance table of final model
+summary(sglm.heart)
+```
+
+From the results of our final model fit on the full data set, we can see the most significant predictors are Sex, ChestPainType, Cholesterol, FastingBS, and Oldpeak, which all have a p-value of \~0.
