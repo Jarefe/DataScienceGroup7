@@ -58,6 +58,7 @@ To begin the process of model selection, we first fit the model using all the pr
 
 ```{r}
 #| echo: false
+#| comment: "##"
 
 # fit logistic regression model using all predictors
 glm.heart <- glm(HeartDisease~., "binomial", HeartData)
@@ -68,6 +69,7 @@ From the significance table, we noted that the predictors Age, RestingBP, Restin
 
 ```{r}
 #| echo: false
+#| comment: "##"
 
 # perform backward stepwise regression
 sglm.heart <- step(glm.heart, trace = 0)
@@ -79,12 +81,18 @@ We can see from the results of the backward stepwise regression that the same hi
 The formula for our final model is:
 
 $$
-p(X) = \frac{e^{\beta_0+\beta_1(Age)+\beta_2(Sex)+\beta_3(ChestPainType)+\beta_4(Cholesterol)+\beta_5(FastingBS)+\beta_6(ExerciseAngina)+\beta_7(Oldpeak)+\beta_8(ST\_Slope)}}{1+e^{\beta_0+\beta_1(Age)+\beta_2(Sex)+\beta_3(ChestPainType)+\beta_4(Cholesterol)+\beta_5(FastingBS)+\beta_6(ExerciseAngina)+\beta_7(Oldpeak)+\beta_8(ST\_Slope)}}
+p(HeartDisease = 1 | X) =
+$$
+
+$$
+\frac{e^{\beta_0+\beta_1(Age)+\beta_2(Sex)+\beta_3(ChestPainType)+\beta_4(Cholesterol)+\beta_5(FastingBS)+\beta_6(ExerciseAngina)+\beta_7(Oldpeak)+\beta_8(ST\_Slope)}}{1+e^{\beta_0+\beta_1(Age)+\beta_2(Sex)+\beta_3(ChestPainType)+\beta_4(Cholesterol)+\beta_5(FastingBS)+\beta_6(ExerciseAngina)+\beta_7(Oldpeak)+\beta_8(ST\_Slope)}}
 $$
 
 Using the final model, we performed 10 random 80/20 training/test splits to get the mean test prediction error.
 
 ```{r}
+#| comment: "##"
+
 # calculate mean test prediction error
 set.seed(1)
 test.errors <- c()
@@ -108,9 +116,17 @@ cat("Mean test prediction error: ", mean(test.errors))
 The following section is the same process, but with a different approach to the splitting and training
 
 ```{r}
-# calculate mean test prediction error
+#| echo: false
+#| output: false
+
 library(boot)
 library(caret)
+```
+
+```{r}
+#| comment: "##"
+
+# calculate mean test prediction error
 set.seed(1)
 test.errors <- c()
 
@@ -139,8 +155,10 @@ This approach results in a smaller mean test prediction error than the previousl
 
 ```{r}
 #| echo: false
+#| comment: "##"
+
 # repeat significance table of final model
 summary(sglm.heart)
 ```
 
-From the results of our final model fit on the full data set, we can see the most significant predictors are Sex, ChestPainType, Cholesterol, FastingBS, and Oldpeak, which have the smallest p values among all the predictors. Among these, ChestPainTypeNAP appears to be the most statistically significant predictor, as it has the smallest p value overall.
+From the results of our final model fit on the full data set, we can see the most significant predictors are Sex, ChestPainType, Cholesterol, FastingBS, and ExerciseAngina, which have the smallest p values among all the predictors. Among these, ChestPainTypeNAP appears to be the most statistically significant predictor, as it has the smallest p value overall.
