@@ -8,7 +8,7 @@ editor: visual
 #| echo: false
 
 # change working directory accordingly
-setwd("D:/School/Data Science/Neural Network")
+setwd("D:/School/Data Science/Logistic Regression")
 HeartData <- read.csv("heart.csv", stringsAsFactors=TRUE)
 ```
 
@@ -78,4 +78,34 @@ cat("Mean test prediction error: ", mean(test.errors))
 summary(sglm.heart)
 ```
 
-From the results of our final model fit on the full data set, we can see the most significant predictors are Sex, ChestPainType, Cholesterol, FastingBS, and Oldpeak, which all have a p-value of \~0.
+From the results of our final model fit on the full data set, we can see the most significant predictors are Sex, ChestPainType, Cholesterol, FastingBS, and Oldpeak, which have the smallest p values among all the predictors. Among these, ChestPainTypeNAP appears to be the most statistically significant predictor, as it has the smallest p value overall.
+
+The following section is the same process, but with a different approach to the splitting and training
+
+```{r}
+# calculate mean test prediction error
+set.seed(1)
+test.errors <- c()
+
+# use createDataPartition for train/test split
+splitIndex <- createDataPartition(HeartData$HeartDisease, p = 0.8, list = FALSE)
+train.HeartData <- HeartData[splitIndex, ]
+test.HeartData <- HeartData[-splitIndex, ]
+
+# fit model using results of backward stepwise regression
+train.glm.heart <- glm(HeartDisease ~ ., family = "binomial", data = train.HeartData)
+
+# predict on test data
+glm.pred <- predict(train.glm.heart, test.HeartData, type = "response")
+
+# simplify thresholding
+glm.pred <- as.numeric(glm.pred >= 0.5)
+
+# calculate test prediction error using cross-validation
+cv.error <- cv.glm(HeartData, glm.heart, K = 10)$delta[1]
+cat("Mean test prediction error: ", cv.error)
+
+summary(sglm.heart)
+```
+
+This approach results in a smaller mean test prediction error than the previously utilized for loop, but still has the same outcome when determining the most statistically significant predictors.
