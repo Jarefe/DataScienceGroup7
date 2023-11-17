@@ -85,7 +85,6 @@ $$
 Using the final model, we performed 10 random 80/20 training/test splits to get the mean test prediction error.
 
 ```{r}
-
 # calculate mean test prediction error
 set.seed(1)
 test.errors <- c()
@@ -104,24 +103,14 @@ for (i in 1:10) {
   test.errors[i] <- sum(glm.pred != test.HeartData[, "HeartDisease"])/length(glm.pred)
 }
 cat("Mean test prediction error: ", mean(test.errors))
-
 ```
-
-# Results:
-
-```{r}
-#| echo: false
-
-# repeat significance table of final model
-summary(sglm.heart)
-```
-
-From the results of our final model fit on the full data set, we can see the most significant predictors are Sex, ChestPainType, Cholesterol, FastingBS, and Oldpeak, which have the smallest p values among all the predictors. Among these, ChestPainTypeNAP appears to be the most statistically significant predictor, as it has the smallest p value overall.
 
 The following section is the same process, but with a different approach to the splitting and training
 
 ```{r}
 # calculate mean test prediction error
+library(boot)
+library(caret)
 set.seed(1)
 test.errors <- c()
 
@@ -142,8 +131,16 @@ glm.pred <- as.numeric(glm.pred >= 0.5)
 # calculate test prediction error using cross-validation
 cv.error <- cv.glm(HeartData, glm.heart, K = 10)$delta[1]
 cat("Mean test prediction error: ", cv.error)
-
-summary(sglm.heart)
 ```
 
 This approach results in a smaller mean test prediction error than the previously utilized for loop, but still has the same outcome when determining the most statistically significant predictors.
+
+# Results:
+
+```{r}
+#| echo: false
+# repeat significance table of final model
+summary(sglm.heart)
+```
+
+From the results of our final model fit on the full data set, we can see the most significant predictors are Sex, ChestPainType, Cholesterol, FastingBS, and Oldpeak, which have the smallest p values among all the predictors. Among these, ChestPainTypeNAP appears to be the most statistically significant predictor, as it has the smallest p value overall.
