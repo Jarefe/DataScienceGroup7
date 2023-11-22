@@ -1,0 +1,65 @@
+---
+title: "Decision Tree"
+format: html
+editor: visual
+---
+
+## Decision Tree
+
+```{r}
+#| echo: false
+library(tree)
+heart$HeartDisease=as.factor(heart$HeartDisease)
+heart$ChestPainType=as.factor(heart$ChestPainType)
+heart$RestingECG=as.factor(heart$RestingECG)
+heart$ExerciseAngina=as.factor(heart$ExerciseAngina)
+heart$ST_Slope=as.factor(heart$ST_Slope)
+```
+
+Initial Decision Tree (talk about issues, too many nodes etc)
+
+```{r}
+#| echo: true
+#| warning: false
+set.seed(100)
+tree.HD = tree(HeartDisease~., data = heart)
+plot(tree.HD)
+text(tree.HD, pretty=0)
+```
+
+Find best number of nodes
+
+```{r}
+#| echo: true
+#| warning: false
+set.seed(100)
+cv.HD = cv.tree(tree.HD,FUN=prune.misclass)
+plot(cv.HD$size,cv.HD$dev,type="b")
+```
+
+Pruning tree
+
+```{r}
+#| echo: true
+prune.HD=prune.misclass(tree.HD,best=7)
+plot(prune.HD)
+text(prune.HD, pretty=2)
+```
+
+Testing/training data and showing MSE
+
+```{r}
+#| echo: true
+#| warning: false
+MSE=rep(0,10)
+for(i in 1:10){
+  set.seed(i)
+  trainingIndex = sample(1:nrow(heart),.8*nrow(heart))
+  train = heart[trainingIndex,]
+  test = heart[-trainingIndex,]
+  prune.HD = prune.misclass(tree.HD,best=7)
+  yhat=predict(prune.HD,newdata=test,type="class")
+  MSE[i] = mean((as.numeric(yhat) - as.numeric(test$HeartDisease))^2)
+}
+mean(MSE)
+```
