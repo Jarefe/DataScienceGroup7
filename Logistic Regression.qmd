@@ -1,16 +1,31 @@
 ---
-title: ""
+title: "Determining Heart Disease Factors"
+subtitle: "Group 7"
+author: "Jared Feliprada, Danny Kim, James \"Drew\" Rackovan, Kevin Pham, Tom Huynh"
+date: "December 1, 2023"
+date-format: long
 format: pdf
 editor: visual
+code-block-border-left: "#dfdfdf"
 ---
 
-# Introduction
+```{r}
+#| echo: false
+
+# change working directory accordingly
+setwd("D:/School/Data Science/Logistic Regression")
+HeartData <- read.csv("heart.csv", stringsAsFactors=TRUE)
+```
+
+{{< pagebreak >}}
+
+# \color{blue}{Introduction}
 
 Cardiovascular diseases (CVDs) are the number one cause of death globally. With heart failure accounting for 4 out of 5 of these CVD deaths, it is important to identify factors that put individuals at risk. Doing so allows for early detection and giving them ample time to seek assistance. The data we utilize is taken from Kaggle and is a combination of different datasets that have not been combined before.
 
-# Dataset Information
+The source of this dataset is a collection of datasets that come from the Cleveland Clinic in Cleveland, Ohio, the Hungarian Institute of Cardiology in Budapest, Hungary, the Veterans Administration Medical Center in Long Beach, California, and the University Hospital in Zurich and Basel, Switzerland. It consists of patients that underwent angiography at the aforementioned institutions. The dataset contains 918 observations with 12 variables.
 
-## Factors (as stated by Kaggle)
+### Predictors:
 
 1.  Age: age of the patient \[years\]
 
@@ -34,25 +49,21 @@ Cardiovascular diseases (CVDs) are the number one cause of death globally. With 
 
 11. ST_Slope: the slope of the peak exercise ST segment \[Up: upsloping, Flat: flat, Down: downsloping\]
 
+### Response:
+
 12. HeartDisease: output class \[1: heart disease, 0: Normal\]
 
-# Main Question
+## Main Question
 
-Which factor(s) contribute the most to the risk of heart disease?
+Our priority is inference. The main question we are studying is which factor(s) contribute the most to the risk of heart disease?
 
-```{r}
-#| echo: false
+# \color{blue}{Methods and Results}
 
-# change working directory accordingly
-setwd("D:/School/Data Science/Logistic Regression")
-HeartData <- read.csv("heart.csv", stringsAsFactors=TRUE)
-```
-
-# Methods:
-
-## Logistic Regression (Danny Kim, Jared Feliprada)
+## Logistic Regression (Danny Kim, Jared Feliprada, James "Drew" Rackovan)
 
 Since our dataset utilizes a mix of qualitative and quantitative variables and our response variable is a binary value, we decided to utilize a logistic regression model, as logistic models are designed for binary outcomes and its ability to handle both types of predictors. Had linear regression been used, it would predict values outside of the intended range of \[0,1\].
+
+An advantage of the logistic regression model is its interpretability. This works well for us since our goal is to look at the relationship between the predictors and the response variable. On the other hand, the model has the disadvantage of not being the best fit if the relationship between the variables turn out to be very complex.
 
 To begin the process of model selection, we first fit the model using all the predictors.
 
@@ -151,8 +162,6 @@ cat("Mean test prediction error: ", cv.error)
 
 This approach results in a smaller mean test prediction error than the previously utilized for loop, but still has the same outcome when determining the most statistically significant predictors.
 
-# Results:
-
 ```{r}
 #| echo: false
 #| comment: "##"
@@ -161,4 +170,10 @@ This approach results in a smaller mean test prediction error than the previousl
 summary(sglm.heart)
 ```
 
-From the results of our final model fit on the full data set, we can see the most significant predictors are Sex, ChestPainType, Cholesterol, FastingBS, and ExerciseAngina, which have the smallest p values among all the predictors. Among these, ChestPainTypeNAP appears to be the most statistically significant predictor, as it has the smallest p value overall.
+From the results of our final model fit on the full dataset, we can see the most significant predictors are Sex, ChestPainType, Cholesterol, FastingBS, and ExerciseAngina, which have the smallest p-values among all the predictors. Among these, ChestPainTypeNAP appears to be the most statistically significant predictor, as it has the smallest p-value overall.
+
+# \color{blue}{Conclusion}
+
+{{< pagebreak >}} \# Bibliography
+
+Janosi, A, Steinbrunn, W, Pfisterer, M, and Detrano, R. (1988). Heart Failure Prediction Dataset. Retrieved December 1, 2023 from https://www.kaggle.com/datasets/fedesoriano/heart-failure-prediction/data.
