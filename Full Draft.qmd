@@ -138,25 +138,29 @@ From the results of our final model fit on the full dataset, we can see the most
 ```{r}
 #| echo: false
 library(tree)
-HeartData$HeartDisease=as.factor(HeartData$HeartDisease)
-HeartData$ChestPainType=as.factor(HeartData$ChestPainType)
-HeartData$RestingECG=as.factor(HeartData$RestingECG)
-HeartData$ExerciseAngina=as.factor(HeartData$ExerciseAngina)
-HeartData$ST_Slope=as.factor(HeartData$ST_Slope)
+heart$HeartDisease=as.factor(heart$HeartDisease)
+heart$ChestPainType=as.factor(heart$ChestPainType)
+heart$RestingECG=as.factor(heart$RestingECG)
+heart$ExerciseAngina=as.factor(heart$ExerciseAngina)
+heart$ST_Slope=as.factor(heart$ST_Slope)
 ```
 
-Initial Decision Tree (talk about issues, too many nodes etc)
+Model Formula = HeartDisease ~ Age+ Sex+ ChestPainType+ RestingBP + Cholesterol + FastingBS + RestingECG + MaxHR + ExerciseAngina + Oldpeak + ST_Slope
+
+Using a decision tree in this situation allows us to interpret the data much more easily compared to other models and grants us the ability to recognize non-linear relationships, outliers, multi-factor interactions, and more. However, there are several drawbacks commonly associated with decision trees such as their high variance and risk of overfitting. With the Heart dataset, there are a total of 10 nodes in which we can utilize pruning to select the best nodes/factors to obtain the best accuracy.
 
 ```{r}
 #| echo: true
 #| warning: false
 set.seed(100)
-tree.HD = tree(HeartDisease~., data = HeartData)
+tree.HD = tree(HeartDisease~., data = heart)
 plot(tree.HD)
 text(tree.HD, pretty=0)
 ```
 
-Find best number of nodes
+In order to find the best number of nodes for our decision tree, we can use cross-validation to do so in a way that minimizes misclassification error. Cross-validation is typically performed by iteratively splitting the data into training and validation sets. For each split, the model is trained on the training set and evaluated on the validation set.
+
+The cv.tree function performs cross-validation on the decision tree. It takes the initial tree (tree.HD) and a pruning function (prune.misclass) as arguments. Based on the plot produced, we can conclude that 7 nodes are ideal as this is when we see the plots start to level.
 
 ```{r}
 #| echo: true
@@ -166,7 +170,7 @@ cv.HD = cv.tree(tree.HD,FUN=prune.misclass)
 plot(cv.HD$size,cv.HD$dev,type="b")
 ```
 
-Pruning tree
+After constructing the initial decision tree, pruning involves removing branches to simplify the model. This helps prevent overfitting, where the tree captures noise in the training data and doesn't generalize well to new data. The plot of the pruned tree shows a simplified structure compared to the original tree. Pruning helps in achieving a balance between model complexity and predictive performance. The pruned tree cuts the total number of nodes down to 7 from 10.
 
 ```{r}
 #| echo: true
@@ -175,25 +179,36 @@ plot(prune.HD)
 text(prune.HD, pretty=2)
 ```
 
-Testing/training data and showing MSE
+The dataset is split into 80/20 training and testing sets to get the mean test error rate. The entire process is repeated 10 times with different random seeds. This repetition accounts for the variability in training/test set splits and provides a more robust assessment of the model's performance.
+
+This average error rate serves as an overall indicator of the model's predictive performance. A lower mean error rate indicates better accuracy in predicting the target variable.
 
 ```{r}
 #| echo: true
 #| warning: false
-MSE=rep(0,10)
+error=rep(0,10)
 for(i in 1:10){
   set.seed(i)
-  trainingIndex = sample(1:nrow(HeartData),.8*nrow(HeartData))
-  train = HeartData[trainingIndex,]
-  test = HeartData[-trainingIndex,]
+  trainingIndex = sample(1:nrow(heart),.8*nrow(heart))
+  train = heart[trainingIndex,]
+  test = heart[-trainingIndex,]
+  
+  tree.HD = tree(HeartDisease~., data = train)
   prune.HD = prune.misclass(tree.HD,best=7)
+  if(i == 1 || i == 4){
+    plot(prune.HD)
+    text(prune.HD,pretty=2)
+  }
+  
   yhat=predict(prune.HD,newdata=test,type="class")
-  MSE[i] = mean((as.numeric(yhat) - as.numeric(test$HeartDisease))^2)
+  error[i] = sum(yhat != test$HeartDisease) / length(yhat)
 }
-mean(MSE)
+mean(error)
+error
 ```
 
-From the results shown here, the most significant variables are ST_Slope, ChestPainType, Oldpeak, Cholesterol, and MaxHR.
+The resulting two trees were picked based on the lowest error rate across all 10 trees, with these error rates being .136 and .125 respectively. From these two trees, we see that when combined with one another, the most significant combinations of factors are ST_Slope, ChestPainType, MaxHR, Oldpeak, and Cholesterol. For both tree models, ST_Slope is the predictor used for the main split. Going down a level, the model chooses ChestPainType for both, and then Oldpeak, MaxHR, and Cholesterol are used to determine the final nodes.
+
 
 {{< pagebreak >}}
 
