@@ -7,6 +7,11 @@ date-format: long
 format: pdf
 editor: visual
 code-block-border-left: "#dfdfdf"
+fig-height: 3
+margin-top: 1in
+margin-right: 1in
+margin-bottom: 1in
+margin-left: 1in
 ---
 
 ```{r}
@@ -154,7 +159,7 @@ Using a decision tree in this situation allows us to interpret the data much mor
 set.seed(100)
 tree.HD = tree(HeartDisease~., data = HeartData)
 plot(tree.HD)
-text(tree.HD, pretty=0)
+text(tree.HD, pretty=0, cex=0.5)
 ```
 
 In order to find the best number of nodes for our decision tree, we can use cross-validation to do so in a way that minimizes misclassification error. Cross-validation is typically performed by iteratively splitting the data into training and validation sets. For each split, the model is trained on the training set and evaluated on the validation set.
@@ -166,7 +171,7 @@ The cv.tree function performs cross-validation on the decision tree. It takes th
 #| warning: false
 set.seed(100)
 cv.HD = cv.tree(tree.HD,FUN=prune.misclass)
-plot(cv.HD$size,cv.HD$dev,type="b")
+plot(cv.HD$size,cv.HD$dev,type="b", xlab="size", ylab="dev")
 ```
 
 After constructing the initial decision tree, pruning involves removing branches to simplify the model. This helps prevent overfitting, where the tree captures noise in the training data and doesn't generalize well to new data. The plot of the pruned tree shows a simplified structure compared to the original tree. Pruning helps in achieving a balance between model complexity and predictive performance. The pruned tree cuts the total number of nodes down to 7 from 10.
@@ -175,7 +180,7 @@ After constructing the initial decision tree, pruning involves removing branches
 #| echo: true
 prune.HD=prune.misclass(tree.HD,best=7)
 plot(prune.HD)
-text(prune.HD, pretty=2)
+text(prune.HD, pretty=0, , cex=0.5)
 ```
 
 The dataset is split into 80/20 training and testing sets to get the mean test error rate. The entire process is repeated 10 times with different random seeds. This repetition accounts for the variability in training/test set splits and provides a more robust assessment of the model's performance.
@@ -196,7 +201,7 @@ for(i in 1:10){
   prune.HD = prune.misclass(tree.HD,best=7)
   if(i == 1 || i == 4){
     plot(prune.HD)
-    text(prune.HD,pretty=2)
+    text(prune.HD, pretty=0, cex=0.5)
   }
   
   yhat=predict(prune.HD,newdata=test,type="class")
@@ -208,15 +213,13 @@ error
 
 The resulting two trees were picked based off the lowest error rate across all 10 trees, with these error rates being .136 and .125 respectively. From these two trees, we see that when combined with one another, the most significant combination of factors are ST_Slope, ChestPainType, MaxHR, Oldpeak, and Cholesterol. For both tree models, ST_Slope is the variable used for the main split. Going down a level, the model chooses ChestPainType for both, and then Oldpeak, MaxHR, and Cholesteral are used for determining the final nodes.
 
-
-
-{{< pagebreak >}}
-
 # \color{blue}{Conclusion}
 
 Overall, both models determined that ChestPainType, Cholesterol, and ST_Slope are the most significant predictors in determining a patient's risk for heart disease. However, there are slight discrepancies between the models. The logistic regression model identified FastingBS, ExerciseAngina, and Sex as significant predictors, while the tree model omitted these variables from the pruned tree.
 
 Some possible reasons for the discrepancies include the linear nature of the logistic regression model compared to the non-linear nature of the tree model. The tree model can capture more complex interactions between variables, in addition to both models having different variable importance measures. The tree model is also more flexible as it makes fewer assumptions about the data.
+
+The logistic regression model had a better prediction rate of 0.1320652 versus the decision tree's 0.1625. With it not being a big difference and our goal being inference, we decided the interpretability of the decision tree model made it the better model to use.
 
 # Bibliography
 
