@@ -139,6 +139,7 @@ summary(sglm.heart)
 From the results of our final model fit on the full dataset, we can see the most significant predictors are Sex, ChestPainType, Cholesterol, FastingBS, and ExerciseAngina, which have the smallest p-values among all the predictors; ST_SlopeFlat is also a significant predictor, but has a larger p value in comparison. Among these, ChestPainTypeNAP appears to be the most statistically significant predictor, as it has the smallest p-value overall. Oldpeak has some significance but not to the same extent as all the other variables.
 
 ## Decision Tree (Kevin Pham, Tom Huynh)
+
 ```{r}
 #| echo: false
 library(tree)
@@ -149,7 +150,7 @@ HeartData$ExerciseAngina=as.factor(HeartData$ExerciseAngina)
 HeartData$ST_Slope=as.factor(HeartData$ST_Slope)
 ```
 
-Model Formula = HeartDisease ~ Age + Sex + ChestPainType + RestingBP + Cholesterol + FastingBS + RestingECG + MaxHR + ExerciseAngina + Oldpeak + ST_Slope
+Model Formula = HeartDisease \~ Age + Sex + ChestPainType + RestingBP + Cholesterol + FastingBS + RestingECG + MaxHR + ExerciseAngina + Oldpeak + ST_Slope
 
 Using a decision tree in this situation allows us to interpret the data much more easily compared to other models and grants us the ability to recognize non-linear relationships, outliers, multi-factor interactions, and more. However, there are several drawbacks commonly associated with decision trees such as their high variance and risk of overfitting. With the Heart dataset, there are a total of 10 nodes in which we can utilize pruning to select the best nodes/factors to obtain the best accuracy.
 
@@ -219,7 +220,7 @@ Overall, both models determined that ChestPainType, Cholesterol, and ST_Slope ar
 
 Some possible reasons for the discrepancies include the linear nature of the logistic regression model compared to the non-linear nature of the tree model. The tree model can capture more complex interactions between variables, in addition to both models having different variable importance measures. The tree model is also more flexible as it makes fewer assumptions about the data.
 
-The logistic regression model had a better prediction rate of 0.1320652 versus the decision tree's 0.1625. With it not being a big difference and our goal being inference, we decided the interpretability of the decision tree model made it the better model to use.
+The logistic regression model had a better prediction rate of 0.1320652 versus the decision tree's 0.1625. With it not being a big difference and our goal being inference, we decided the interpretability of the decision tree model made it the better model to use. With the decision tree model, it was clear to see the top 1 or 2 predictors that contribute the most to the risk of heart disease. With the logistic regression model, we could tell which predictors were important but deciding the top 1 or 2 predictors was not as clear since several predictors had p-values roughly equal to 0.
 
 # Bibliography
 
